@@ -2,10 +2,6 @@ export function getRandom(x) {
   return Math.floor(Math.random() * (x + 1));
 }
 
-export function isLucky(percentOfChance) {
-  return getRandom(99) + 1 <= percentOfChance;
-}
-
 export function shuffleArray(array) {
   const newArray = [...array];
 
@@ -18,8 +14,4 @@ export function shuffleArray(array) {
   }
 
   return newArray;
-}
-
-export function capitalize(word) {
-  return word[0].toUpperCase() + word.slice(1);
 }

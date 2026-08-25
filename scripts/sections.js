@@ -1,74 +1,36 @@
-let availableSections = [];
-let nextSectionVars = {};
+// Tiny hash-based router: shows one <section id> at a time via a CSS rule and
+// notifies a callback on every change.
+let sections = [];
+let current = "";
+let onChange = () => {};
 
-function isValidSection(sectionName) {
-  return availableSections.includes(sectionName);
+export function goToSection(name) {
+  location.hash = name;
 }
 
-let onSectionChange = () => {};
-
-function renderSection(sectionName) {
-  const newSection = isValidSection(sectionName) ? sectionName : "title";
-
-  if (newSection === document.body.dataset.currentSection) {
-    return;
-  }
-
-  if (document.body.dataset.currentSection) {
-    document.body.dataset.prevSection = document.body.dataset.currentSection;
-  }
-
-  const resultSectionChange = onSectionChange({
-    nextSection: newSection,
-    currentSection: document.body.dataset.prevSection,
-    vars: nextSectionVars,
-  });
-
-  if (resultSectionChange !== false) {
-    document.body.dataset.currentSection = newSection;
-  } else {
-    window.history.forward();
-  }
+function route() {
+  const next = sections.includes(location.hash.slice(1))
+    ? location.hash.slice(1)
+    : "title";
+  if (next === current) return;
+  onChange({ currentSection: current, nextSection: next });
+  current = next;
+  document.body.dataset.currentSection = next;
 }
 
-export function goToSection(sectionName, vars = {}) {
-  nextSectionVars = vars;
-  window.location.hash = sectionName;
-}
+export default function init(onChangeCallback) {
+  onChange = onChangeCallback;
 
-export default function init(onSectionChangeCallback) {
-  onSectionChange = onSectionChangeCallback;
-
-  let sectionSelectors = [];
-
-  for (let section of document.querySelectorAll("section[id]")) {
-    availableSections.push(section.id);
-
-    sectionSelectors.push(
-      `body[data-current-section="${section.id}"] section#${section.id}`
-    );
+  const selectors = [];
+  for (const el of document.querySelectorAll("section[id]")) {
+    sections.push(el.id);
+    selectors.push(`body[data-current-section="${el.id}"] section#${el.id}`);
   }
-
   document.head.insertAdjacentHTML(
     "beforeend",
-    `<style>${sectionSelectors.join(",") + "{display:flex;}"}</style>`
+    `<style>${selectors.join(",")}{display:flex;}</style>`,
   );
 
-  function onHashChange() {
-    renderSection(window.location.hash.substring(1));
-  }
-
-  window.addEventListener("hashchange", onHashChange);
-
-  document.body.addEventListener("click", (e) => {
-    if (e.target.tagName.toUpperCase() !== "A") {
-      return;
-    }
-
-    nextSectionVars = JSON.parse(JSON.stringify(e.target.dataset));
-  });
-
-  goToSection("title");
-
-  onHashChange();
+  addEventListener("hashchange", route);
+  route();
 }

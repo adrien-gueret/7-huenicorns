@@ -20,7 +20,7 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
     .replaceAll("const ", "let ")
     .replaceAll("undefined", "void 0");
 
-  fs.unlinkSync('./index.js');
+  fs.unlinkSync("./index.js");
 
   console.log("Minify JS...");
   const minifiedJS = await minify.js(indexJS);
@@ -38,16 +38,21 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
   indexHTML = indexHTML
     .replace(
       '<script type="module" src="scripts/index.js"></script>',
-      () => `<script>${minifiedJS}</script>`
+      () => `<script>${minifiedJS}</script>`,
     )
     .replace(
       '<link href="./style.css" rel="stylesheet" />',
-      () => `<style>${minifiedCSS}</style>`
+      () => `<style>${minifiedCSS}</style>`,
     )
-    .replaceAll('"use strict";', "")
-    // TODO: add your own long texts to replace
-    //.replaceAll("./images/sprites.png", toBase64Url("./images/sprites.png"))
-    //.replaceAll("--primary-light", "--pl");
+    .replaceAll('"use strict";', "");
+
+  // Inline the sprite sheet as base64 when present (kept external during dev).
+  if (fs.existsSync("./images/unicorns.png")) {
+    indexHTML = indexHTML.replaceAll(
+      "images/unicorns.png",
+      toBase64Url("./images/unicorns.png"),
+    );
+  }
 
   const ids = [...indexHTML.matchAll(/id="([^"]*?)"/g)];
 
@@ -80,7 +85,7 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
   fs.writeFileSync(
     "./entry/index.html",
     `<script>${packedCode.firstLine + packedCode.secondLine}</script>`,
-    { encoding: "utf8" }
+    { encoding: "utf8" },
   );
 
   console.log("Zip entry folder...");
@@ -91,7 +96,7 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
     await execSync("ect.exe -9 -zip ./entry.zip", { env: process.env });
   } catch (e) {
     console.warn(
-      "⚠ Cannot compress zip, please be sure ect.exe is installed and available from global scope"
+      "⚠ Cannot compress zip, please be sure ect.exe is installed and available from global scope",
     );
   }
 
@@ -110,12 +115,12 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
       "❌ File is " +
         (size - JS13K_LIMIT_SIZE) +
         "bytes too big! " +
-        percentOfTotalBudget
+        percentOfTotalBudget,
     );
   } else {
     console.log(
       `✅ All good! ${JS13K_LIMIT_SIZE - size} bytes left. ` +
-        percentOfTotalBudget
+        percentOfTotalBudget,
     );
   }
 

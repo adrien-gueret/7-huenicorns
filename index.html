@@ -1,30 +1,186 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TODO: Your game name</title>
+    <title>7 Huenicorns</title>
     <link href="./style.css" rel="stylesheet" />
-    <link id="favIcon" rel="icon shortcut" />
   </head>
   <body>
     <main>
       <section id="title">
-        <h1 class="sectionTitle">TODO: Your game name</h1>
+        <h1 class="logo">7 Huenicorns</h1>
 
-        <p class="p">
-          <a href="#newGame">Click to start</a>
-        </p>
+        <p class="p"><a href="#play">Play</a></p>
+        <p class="p"><a href="#howto">How to Play?</a></p>
       </section>
 
-      <section id="newGame">
-        <h2 class="sectionTitle">TODO: start game!</h2>
+      <section id="play">
+        <h2 class="sectionTitle">Play</h2>
+
+        <p class="p"><a href="#game">Play vs AI</a></p>
+        <p class="p disabled">Play vs another player <em>(Coming later)</em></p>
+        <p class="p"><a href="#title">Back</a></p>
+      </section>
+
+      <section id="howto">
+        <h2 class="sectionTitle">How to Play?</h2>
+
+        <div class="rules howto">
+          <p class="htLead">Build the rainbow before your opponent!</p>
+
+          <div class="htStep">
+            <h3><i>1</i> Split</h3>
+            <div class="htPic">
+              <span class="htPair">
+                <span class="card" data-color="0" style="--i: 2"
+                  ><span class="v">3</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+                <span class="card" data-color="3" style="--i: 0"
+                  ><span class="v">1</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+              </span>
+              <span class="htPair">
+                <span class="card" data-color="1" style="--i: 1"
+                  ><span class="v">2</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+                <span class="card" data-color="4" style="--i: 4"
+                  ><span class="v">5</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+              </span>
+            </div>
+            <p>The <b>Dealer</b> splits 4 unicorns into 2 pairs.</p>
+          </div>
+
+          <div class="htStep">
+            <h3><i>2</i> Pick</h3>
+            <div class="htPic">
+              <span class="htPair sel">
+                <span class="card pick" data-color="0" style="--i: 2"
+                  ><span class="v">3</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+                <span class="card pick" data-color="3" style="--i: 0"
+                  ><span class="v">1</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+              </span>
+              <span class="htArrow">👈</span>
+              <span class="htPair">
+                <span class="card" data-color="1" style="--i: 1"
+                  ><span class="v">2</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+                <span class="card" data-color="4" style="--i: 4"
+                  ><span class="v">5</span
+                  ><span class="art"><span class="art-img"></span></span
+                ></span>
+              </span>
+            </div>
+            <p>The <b>Receiver</b> picks a pair. The Dealer gets the other.</p>
+          </div>
+
+          <div class="htStep">
+            <h3><i>3</i> Make 7</h3>
+            <div class="htPic htMath">
+              <span>1 <em>+</em> 6</span>
+              <span>2 <em>+</em> 5</span>
+              <span>3 <em>+</em> 4</span>
+            </div>
+            <p>Pair your unicorns whose values add up to 7.</p>
+          </div>
+
+          <div class="htStep">
+            <h3><i>4</i> Make a Fragment</h3>
+            <div class="htPic">
+              <span class="card" data-color="0" style="--i: 2"
+                ><span class="v">3</span
+                ><span class="art"><span class="art-img"></span></span
+              ></span>
+              <span class="htPlus">+</span>
+              <span class="card" data-color="2" style="--i: 3"
+                ><span class="v">4</span
+                ><span class="art"><span class="art-img"></span></span
+              ></span>
+              <span class="htArrow">→</span>
+              <span class="gem" data-color="0"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+            </div>
+            <p>
+              Choose one unicorn to become a Rainbow Fragment; the other is
+              discarded. Pick a color you already own and you draw a fresh
+              unicorn instead.
+            </p>
+          </div>
+
+          <div class="htStep">
+            <h3><i>5</i> Complete the Rainbow</h3>
+            <div class="htPic htRainbow">
+              <span class="gem" data-color="0"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+              <span class="gem" data-color="1"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+              <span class="gem" data-color="2"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+              <span class="gem" data-color="3"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+              <span class="gem" data-color="4"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+              <span class="gem" data-color="5"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+              <span class="gem" data-color="6"
+                ><svg viewBox="0 0 24 24">
+                  <polygon
+                    points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7"
+                  /></svg
+              ></span>
+            </div>
+            <p>Collect all 7 colors to win!</p>
+          </div>
+        </div>
+        <p class="p"><a href="#title">Back</a></p>
+      </section>
+
+      <section id="game">
+        <div id="board"></div>
       </section>
     </main>
 
-      <p class="p" id="gameOptions">
-        <label><input id="soundsCheckbox" type="checkbox" /> Enable sounds</label>
-      </p>
-      <script type="module" src="scripts/index.js"></script>
+    <p class="p" id="gameOptions">
+      <label><input id="soundsCheckbox" type="checkbox" /> Enable sounds</label>
+    </p>
+    <script type="module" src="scripts/index.js"></script>
   </body>
 </html>

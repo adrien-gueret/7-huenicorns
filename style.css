@@ -1,78 +1,155 @@
-/* ================= */
-/* ================= */
-/* Global */
-/* ================= */
-/* ================= */
+/* ============================================================= */
+/* 7 Huenicorns — base + magical light theme                     */
+/* ============================================================= */
 
 body {
-  --primary-dark: #3f2631;
-  --secondary-dark: #000;
-  --primary-light: #fff;
-  --light-background: #cbcab8;
-  --lighter-background: #d1d0c4;
-  --medium-background: #bdbcab;
-  --shadow: rgba(255, 255, 255, 0.3);
-  --border: #8c8d7a;
-  --radius: 3px;
+  --red: #e23b3b;
+  --orange: #e8862b;
+  --yellow: #e0b21f;
+  --green: #3fae54;
+  --blue: #3f74d1;
+  --indigo: #5b46c7;
+  --violet: #9b46c7;
 
-  font-family: monospace;
-  background-color: var(--primary-dark);
-  image-rendering: optimizeSpeed;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: -o-crisp-edges;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: pixelated;
-  image-rendering: optimize-contrast;
-  -ms-interpolation-mode: nearest-neighbor;
+  --ink: #4a3550;
+  --muted: #9a8aa0;
+  --panel: #ffffff;
+  --line: #ece6f2;
+  --radius: 14px;
+  --shadow: 0 6px 18px rgba(120, 90, 150, 0.12);
+
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(
+    120% 120% at 50% 0%,
+    #fdf7ff 0%,
+    #f6eefc 55%,
+    #efe6f8 100%
+  );
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-  margin: 8px;
-  min-width: 768px;
-  min-height: 700px;
-}
-
-main {
-  width: 768px;
-  height: 700px;
-  box-sizing: border-box;
-  border: 4px solid var(--border);
-  background-color: var(--medium-background);
-  display: flex;
-  flex-shrink: 0;
-  align-items: stretch;
-  justify-content: stretch;
-  overflow: hidden;
-  border-radius: var(--radius);
-  -ms-user-select: none;
+  min-height: 100vh;
+  padding: 10px;
+  margin: 0;
   -webkit-user-select: none;
   user-select: none;
 }
 
+main {
+  width: min(1240px, 98vw);
+  height: min(770px, 96vh);
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.55);
+  border: 3px solid #fff;
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
 main > section {
+  display: none;
   width: 100%;
   position: relative;
-  display: none;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
+}
+
+/* ============================================================= */
+/* Rainbow logo                                                   */
+/* ============================================================= */
+
+.logo {
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: center;
+  background: linear-gradient(
+    90deg,
+    var(--violet),
+    var(--red),
+    var(--orange),
+    var(--yellow),
+    var(--green),
+    var(--blue),
+    var(--violet)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.8));
+}
+
+.logo::before,
+.logo::after {
+  content: "\2726";
+  -webkit-text-fill-color: var(--yellow);
+  color: var(--yellow);
+  margin: 0 0.4em;
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+/* ============================================================= */
+/* Menu screens                                                   */
+/* ============================================================= */
+
+#title,
+#play,
+#howto {
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+#title .logo {
+  font-size: 3.4rem;
+  margin: 0 0 20px;
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 800;
   margin: 12px;
   text-align: center;
+  color: var(--indigo);
 }
 
-.subTitle {
-  font-weight: bolder;
+.p {
   margin: 8px;
-  font-size: 1.8rem;
+  font-size: 1.1rem;
   text-align: center;
-  margin-bottom: 0;
+  color: var(--muted);
 }
 
+.p a {
+  display: inline-block;
+  min-width: 220px;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+
+.p a:hover {
+  transform: translateY(-2px);
+}
+
+.p.disabled {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+/* ============================================================= */
+/* Sound option                                                   */
+/* ============================================================= */
 
 body:not([data-current-section]) #gameOptions,
 [data-current-section="title"] #gameOptions {
@@ -80,21 +157,847 @@ body:not([data-current-section]) #gameOptions,
 }
 
 #gameOptions {
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--primary-light);
+  margin: 10px 0 0;
+  font-weight: 700;
+  color: var(--indigo);
   display: flex;
-  justify-content: center;
   align-items: center;
-}
-
-#gameOptions label {
+  gap: 6px;
   cursor: pointer;
 }
 
-#gameOptions input {
-  cursor: pointer;
-  margin: 0;
+/* ============================================================= */
+/* Game board                                                     */
+/* ============================================================= */
+
+#game {
+  padding: 0;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+  box-sizing: border-box;
   position: relative;
-  top: 2px;
+}
+
+.gameLogo {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* ---- player areas ---- */
+
+.area {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 2px solid var(--line);
+  background: var(--panel);
+  flex: 1;
+  min-height: 0;
+}
+
+.area.ai {
+  --theme: #e2557a;
+  background: linear-gradient(180deg, #fff, #fff2f5);
+  border-color: #f6cdd6;
+}
+
+.area.you {
+  --theme: var(--blue);
+  background: linear-gradient(180deg, #fff, #eff4ff);
+  border-color: #cdd9f6;
+}
+
+.areaInfo {
+  width: 210px;
+  flex-shrink: 0;
+}
+
+.whoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.name {
+  font-size: 1.3rem;
+  color: var(--theme);
+}
+
+.fc {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.fc b {
+  color: var(--ink);
+}
+
+.gems {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.gem {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.gem svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.gem polygon {
+  fill: var(--c);
+  stroke: rgba(0, 0, 0, 0.12);
+  stroke-width: 1.2;
+}
+
+.gem.empty polygon {
+  fill: none;
+  stroke: var(--c);
+  stroke-dasharray: 3 2.4;
+  opacity: 0.5;
+}
+
+.areaCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.none {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---- cards ---- */
+
+.card {
+  --c: var(--ink);
+  width: 86px;
+  height: 120px;
+  box-sizing: border-box;
+  border: 3px solid var(--c);
+  border-radius: 12px;
+  background: #fff;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.08s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* Draggable cards (the Dealer's split) show a grab cursor. */
+.card[draggable="true"] {
+  cursor: grab;
+}
+
+.card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Hand cards only lift on hover and show a pointer when they can be acted on. */
+.area .card {
+  cursor: default;
+}
+.area .card.pick,
+.area .card.hintable,
+.area .card.objective {
+  cursor: pointer;
+}
+
+.area .card:hover {
+  transform: none;
+}
+
+.area .card.pick:hover,
+.area .card.hintable:hover,
+.area .card.objective:hover {
+  transform: translateY(-4px);
+}
+
+.card .v {
+  align-self: flex-start;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--c);
+  margin: 4px 0 0 8px;
+  line-height: 1;
+}
+
+.card .art {
+  flex: 1;
+  width: 78%;
+  margin: -6px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.card .art-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background-image: url(images/unicorns.png);
+  background-repeat: no-repeat;
+  background-size: 600% 100%;
+  background-position: calc(var(--i, 0) / 5 * 100%) center;
+  background-color: var(--c);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.card .art {
+  margin-bottom: 2px;
+}
+
+.card .cn {
+  font-size: 0.6rem;
+  letter-spacing: 0.4px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--c);
+  margin-bottom: 5px;
+}
+
+.card.objective {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px var(--yellow);
+}
+
+.card.pick {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px var(--yellow);
+  animation: pulse 1s infinite;
+}
+
+.card.dim {
+  opacity: 0.35;
+  filter: grayscale(0.5);
+}
+
+.card.hintable {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--yellow) 60%, transparent);
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 0 8px var(--yellow);
+  }
+}
+
+/* Emphasis played when a unicorn has just been stolen (after its glide). */
+.card.pop {
+  animation: pop 0.55s ease;
+  z-index: 4;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent);
+  }
+  35% {
+    transform: scale(1.18) rotate(-3deg);
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--c) 45%, transparent);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+[data-color="0"] {
+  --c: var(--red);
+}
+[data-color="1"] {
+  --c: var(--orange);
+}
+[data-color="2"] {
+  --c: var(--yellow);
+}
+[data-color="3"] {
+  --c: var(--green);
+}
+[data-color="4"] {
+  --c: var(--blue);
+}
+[data-color="5"] {
+  --c: var(--indigo);
+}
+[data-color="6"] {
+  --c: var(--violet);
+}
+
+/* ---- shared area / draw pile ---- */
+
+.offer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 2px solid #f0deae;
+  background: linear-gradient(180deg, #fffdf4, #fdf4d8);
+  flex: 0 0 auto;
+}
+
+/* ---- status + actions ---- */
+
+.status {
+  text-align: center;
+  font-weight: 800;
+  color: var(--indigo);
+  min-height: 1.2em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6em;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.actions button,
+.ovbox button {
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+  cursor: pointer;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  box-shadow: var(--shadow);
+  transition: transform 0.08s ease;
+}
+
+.actions button:hover,
+.ovbox button:hover {
+  transform: translateY(-2px);
+}
+
+.actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.4);
+}
+
+/* ============================================================= */
+/* Roles, split zones, transform feedback                         */
+/* ============================================================= */
+
+.splitBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.splitDeal {
+  gap: 8px;
+}
+
+.splitArrow {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--yellow);
+  filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.7));
+  flex: 0 0 auto;
+}
+
+/* Narrow board: stack the table vertically and turn the arrow downward. */
+@media (max-width: 1120px) {
+  .splitBox {
+    flex-direction: column;
+  }
+  .splitArrow {
+    transform: rotate(90deg);
+  }
+}
+
+.pairs {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.dz {
+  border: 2px dashed #d8b9ec;
+  border-radius: var(--radius);
+  padding: 6px 10px 8px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.dz.pool {
+  border-style: solid;
+  border-color: #f0deae;
+}
+
+.pairDrop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(240, 232, 250, 0.55);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.pairDrop .dzLabel {
+  font-size: 0.85rem;
+}
+
+.pairDrop.full {
+  border-style: solid;
+  border-color: #b98fe0;
+  background: rgba(215, 195, 240, 0.55);
+}
+
+.dzCount {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--indigo);
+  background: rgba(155, 130, 200, 0.18);
+  padding: 2px 12px;
+  border-radius: 999px;
+}
+
+.revLabel {
+  font-size: 0.95rem !important;
+  letter-spacing: 0.4px !important;
+  text-transform: none !important;
+  color: var(--yellow) !important;
+  margin-bottom: 8px !important;
+}
+
+.pairDrop.pick {
+  cursor: pointer;
+}
+
+.pairDrop.pick:hover {
+  border-color: #7bd88f;
+}
+
+/* While choosing, only the two zones react to hover, not their cards. */
+.pairDrop.pick .card:hover {
+  transform: none;
+}
+
+.pairDrop.sel {
+  border-style: solid;
+  border-color: #7bd88f;
+  background: rgba(123, 216, 143, 0.18);
+}
+
+.dzLabel {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--indigo);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.dzCards {
+  display: flex;
+  gap: 8px;
+  min-height: 120px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fixed footprints so the zones never resize as cards enter or leave:
+   the pool holds up to four cards, each pair up to two (card 86px, gap 8px). */
+.dz.pool .dzCards {
+  width: 368px;
+}
+
+.pairDrop .dzCards {
+  width: 180px;
+}
+
+/* Shared draw pile, shown to the left of the revealed cards. */
+.deckPile {
+  flex: 0 0 auto;
+  width: 86px;
+  height: 120px;
+  border-radius: 12px;
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  background: repeating-linear-gradient(45deg, #7a5bd8 0 9px, #6a4bc8 9px 18px);
+  box-shadow:
+    -4px 5px 0 -1px #c3b0ee,
+    -8px 10px 0 -2px #d6c8f3,
+    var(--shadow);
+}
+
+.deckN {
+  background: rgba(0, 0, 0, 0.28);
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 1.15rem;
+}
+
+/* Cards flying in from the deck when a new round is revealed. */
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translate(-155px, -8px) rotate(-14deg) scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.card.deal {
+  animation: deal 0.5s cubic-bezier(0.34, 1.2, 0.64, 1) backwards;
+}
+
+.dzCards .card.deal:nth-child(2) {
+  animation-delay: 0.09s;
+}
+.dzCards .card.deal:nth-child(3) {
+  animation-delay: 0.18s;
+}
+.dzCards .card.deal:nth-child(4) {
+  animation-delay: 0.27s;
+}
+
+.ph {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+  padding: 0 22px;
+}
+
+.rules {
+  max-width: 560px;
+  margin: 0 auto;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.rules p {
+  margin: 8px 14px;
+}
+
+.rules b {
+  color: var(--indigo);
+}
+
+/* ---- How to play: reuses .card, .gem and [data-color] ---- */
+#howto {
+  justify-content: center;
+  padding: 18px 0;
+}
+
+.howto {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 860px;
+  padding: 0 14px;
+  overflow: auto;
+}
+
+.htLead {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--indigo);
+  margin: 0;
+}
+
+.htStep {
+  text-align: center;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.htStep:last-child {
+  grid-column: 1 / -1;
+}
+
+.htStep h3 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.htStep h3 i {
+  font-style: normal;
+  width: 1.6em;
+  height: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  color: #fff;
+  font-size: 0.85em;
+}
+
+.htStep p {
+  margin: 6px auto 0;
+  max-width: 44ch;
+  font-size: 0.95rem;
+}
+
+.htPic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 2px;
+}
+
+.htPair {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 12px;
+}
+
+.htPair.sel {
+  background: rgba(123, 216, 143, 0.18);
+  box-shadow: 0 0 0 2px #7bd88f;
+}
+
+.htPic .card {
+  width: 46px;
+  height: 64px;
+  cursor: default;
+}
+
+.htPic .card:hover {
+  transform: none;
+}
+
+.htPic .card .v {
+  font-size: 0.8rem;
+  margin: 3px 0 0 5px;
+}
+
+.htPlus,
+.htArrow {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.htMath span {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--indigo);
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+}
+
+.htMath em {
+  font-style: normal;
+  color: var(--muted);
+  margin: 0 4px;
+}
+
+.htRainbow .gem {
+  width: 30px;
+  height: 30px;
+}
+
+/* ============================================================= */
+/* Game over overlay                                              */
+/* ============================================================= */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(60, 40, 80, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.ovbox {
+  background: #fff;
+  padding: 28px 32px;
+  border-radius: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+
+.ovbox h2 {
+  margin: 0 0 6px;
+  font-size: 2rem;
+  color: var(--violet);
+}
+
+/* ---- discard-pile viewer ---- */
+.discFab {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 4;
+  border: 2px solid var(--indigo);
+  background: #fff;
+  color: var(--indigo);
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.discFab:hover {
+  background: var(--indigo);
+  color: #fff;
+}
+
+.discBox {
+  max-width: min(92vw, 540px);
+  max-height: 82vh;
+}
+
+.discCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-content: flex-start;
+  overflow: auto;
+  max-height: 62vh;
+  padding: 4px;
+}
+
+.discCards .card {
+  width: 54px;
+  height: 76px;
+  cursor: default;
+}
+
+.discCards .card:hover {
+  transform: none;
+}
+
+.discCards .card .v {
+  font-size: 0.9rem;
+  margin: 2px 0 0 5px;
+}
+
+.discCards .card .cn {
+  font-size: 0.42rem;
+  margin-bottom: 3px;
+}
+
+/* ============================================================= */
+/* View Transitions: cards glide from their old zone to the new  */
+/* ============================================================= */
+
+/* No global cross-fade; only the named card groups animate. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.34, 1.2, 0.44, 1);
+}
+
+/* A card that only appears or only disappears (no counterpart) should not
+   cross-fade — otherwise a fading-in pile-top shows the stacked backs through
+   it. Pure appear/disappear is instant; only real moves animate. */
+::view-transition-old(*):only-child,
+::view-transition-new(*):only-child {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) {
+    animation-duration: 0.01ms;
+  }
 }
