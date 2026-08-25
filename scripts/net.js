@@ -1,4 +1,4 @@
-// Thin wrapper around the js13kGames WebSocket relay.
+// Relay transport — the default, used everywhere except on Wavedash.
 // Two players share a room keyed by a short code. The relay broadcasts every
 // message to all clients in the room and prefixes system messages: "@id" (our
 // own id on connect), "+id" (a peer joined), "-id" (a peer left).
@@ -7,6 +7,10 @@
 //   J|<code>|<id>  presence handshake (carries the code so it also works if the
 //                  relay does not isolate rooms by URL path)
 //   S<json>        a full game-state snapshot
+//
+// It implements the shared transport interface consumed by board.js:
+//   host(h) / join(code, h) / send(state) / close() / needsCode
+// where `h` is { onInfo, onPeer, onState, onLeft }.
 const BASE = "wss://relay.js13kgames.com/7-huenicorns";
 
 let ws = null;
@@ -15,12 +19,19 @@ let room = "";
 let peerSeen = false;
 let cb = {};
 
+// Five random uppercase letters — short enough to read out, big enough to
+// avoid accidental room collisions on the shared relay.
+const randCode = () =>
+  Array.from({ length: 5 }, () =>
+    String.fromCharCode(65 + ((Math.random() * 26) | 0)),
+  ).join("");
+
 // Announce ourselves to the room (idempotent — safe to call repeatedly).
 function hello() {
   if (ws && ws.readyState === 1 && myId) ws.send("J|" + room + "|" + myId);
 }
 
-export function connect(code, handlers) {
+function open(code, handlers) {
   room = code;
   cb = handlers;
   peerSeen = false;
@@ -49,12 +60,27 @@ export function connect(code, handlers) {
   };
 }
 
-export function sendState(s) {
-  if (ws && ws.readyState === 1) ws.send("S" + JSON.stringify(s));
-}
-
-export function close() {
-  if (ws) ws.close();
-  ws = null;
-  peerSeen = false;
-}
+export const relay = {
+  needsCode: true,
+  host(h) {
+    const code = randCode();
+    h.onInfo(`Share this code: ${code} — waiting for an opponent…`);
+    open(code, h);
+  },
+  join(code, h) {
+    if (!code || code.length < 3) {
+      h.onInfo("Enter the code your opponent shared.");
+      return;
+    }
+    h.onInfo("Connecting…");
+    open(code, h);
+  },
+  send(s) {
+    if (ws && ws.readyState === 1) ws.send("S" + JSON.stringify(s));
+  },
+  close() {
+    if (ws) ws.close();
+    ws = null;
+    peerSeen = false;
+  },
+};

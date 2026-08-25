@@ -14,11 +14,17 @@ import {
 } from "./engine.js";
 import { aiSplit, aiChoose, aiTransform, aiDiscard } from "./ai.js";
 import { bonusTaken, battleWin, battleLost, itemThrow } from "../sounds.js";
-import {
-  connect as netConnect,
-  sendState as netSend,
-  close as netClose,
-} from "../net.js";
+
+// The networking transport is injected at startup (relay by default, Wavedash
+// on that platform) so this module stays transport-agnostic. It implements
+// host(h) / join(code, h) / send(state) / close() / needsCode.
+let transport = null;
+export function setTransport(t) {
+  transport = t;
+}
+export function onlineNeedsCode() {
+  return !transport || transport.needsCode !== false;
+}
 
 // Play a sound effect, ignoring errors if audio is not initialised yet.
 const sfx = (fn) => {
@@ -644,7 +650,7 @@ function onDrop(e) {
 
 // Broadcast the current state to the peer after a local move (online only).
 function bcast() {
-  if (isOnline) netSend(getGame());
+  if (isOnline && transport) transport.send(getGame());
 }
 
 function progress() {
@@ -736,14 +742,14 @@ export function enterGame() {
 // ---- Online lobby entry points ----
 
 // Relay callbacks shared by host and guest.
-const handlers = {
+const netHandlers = {
   // The peer announced itself. The host owns the deck, so it deals now and
   // pushes the opening state; both then navigate into the game.
   onPeer() {
     if (isHost && !started) {
       started = true;
       startGame();
-      netSend(getGame());
+      transport.send(getGame());
       goToSection("game");
     }
   },
@@ -767,27 +773,27 @@ const handlers = {
   },
 };
 
-export function hostGame(code) {
+export function hostGame(onInfo) {
   isOnline = true;
   isHost = true;
   mySide = "human";
   started = false;
   oppLeft = false;
-  netConnect(code, handlers);
+  transport.host({ ...netHandlers, onInfo });
 }
 
-export function joinGame(code) {
+export function joinGame(code, onInfo) {
   isOnline = true;
   isHost = false;
   mySide = "ai";
   started = false;
   oppLeft = false;
-  netConnect(code, handlers);
+  transport.join(code, { ...netHandlers, onInfo });
 }
 
 export function leaveOnline() {
   if (!isOnline) return;
-  netClose();
+  if (transport) transport.close();
   isOnline = false;
   isHost = false;
   mySide = "human";
