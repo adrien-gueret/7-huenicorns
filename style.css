@@ -147,6 +147,34 @@ main > section {
   font-style: italic;
 }
 
+.olJoin {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 8px;
+}
+
+#olCode {
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  width: 120px;
+  padding: 10px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+}
+
+#olInfo {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.olJoin a {
+  min-width: auto;
+}
+
 /* ============================================================= */
 /* Sound option                                                   */
 /* ============================================================= */

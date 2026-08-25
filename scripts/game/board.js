@@ -14,6 +14,11 @@ import {
 } from "./engine.js";
 import { aiSplit, aiChoose, aiTransform, aiDiscard } from "./ai.js";
 import { bonusTaken, battleWin, battleLost, itemThrow } from "../sounds.js";
+import {
+  connect as netConnect,
+  sendState as netSend,
+  close as netClose,
+} from "../net.js";
 
 // Play a sound effect, ignoring errors if audio is not initialised yet.
 const sfx = (fn) => {
@@ -35,6 +40,15 @@ let tPair = null; // [a,b] awaiting the keep/discard decision
 let dragId = null; // card currently dragged during a split
 let showDiscard = false; // discard-pile viewer overlay open?
 let dealtKey = ""; // signature of the last revealed set already dealt in
+
+// Online play. In single-player these stay at their defaults and the AI drives
+// the opponent; online, `mySide` is our engine slot and moves are synced over
+// the relay instead of computed by the AI.
+let isOnline = false;
+let isHost = false; // the host (room creator) is engine side "human"
+let mySide = "human"; // which engine slot is the local player
+let started = false; // the online match has begun (initial state exchanged)
+let oppLeft = false; // the opponent disconnected
 
 function resetRound() {
   splitA = [];
@@ -87,8 +101,9 @@ function handCards(s, side) {
   const pl = s[side];
   if (!pl.unicorns.length) return "";
 
+  const mine = side === mySide;
   const myTurn =
-    side === "human" &&
+    mine &&
     s.turn === side &&
     (s.phase === "transform" || s.phase === "discard");
 
@@ -112,7 +127,7 @@ function handCards(s, side) {
       } else if (myTurn && s.phase === "discard") {
         cls = "pick";
       }
-      return cardHtml(id, side === "human" ? "you" : "ai", cls);
+      return cardHtml(id, mine ? "you" : "ai", cls);
     })
     .join("");
 }
@@ -131,7 +146,7 @@ function tableHtml(s) {
   const rev = s.revealed || [];
   const dc = rev.length && rev.join() !== dealtKey ? "deal" : "";
   if (rev.length) dealtKey = rev.join();
-  const human = activeSide(s) === "human";
+  const human = activeSide(s) === mySide;
   const [pairA, pairB] = choose ? s.pairs : split ? [splitA, splitB] : [[], []];
   const pool = split
     ? rev.filter((id) => !splitA.includes(id) && !splitB.includes(id))
@@ -190,13 +205,41 @@ function discardHtml(s) {
   return `<div class="overlay discOverlay"><div class="ovbox discBox"><h2>Discard pile (${s.discard.length})</h2><div class="discCards">${cards}</div><button data-action="discClose">Close</button></div></div>`;
 }
 
+function statusFor(s) {
+  const me = mySide;
+  if (s.winner)
+    return s.winner === "draw"
+      ? "It's a draw!"
+      : s.winner === me
+        ? "You win!"
+        : "The opponent wins!";
+  const mine = activeSide(s) === me;
+  if (s.phase === "split")
+    return mine
+      ? "You are the Dealer: make two pairs"
+      : "The opponent is dealing\u2026";
+  if (s.phase === "choose")
+    return mine
+      ? "You are the Receiver: take one of the two pairs"
+      : "The opponent is choosing\u2026";
+  if (s.phase === "transform")
+    return mine
+      ? "Make 7: pair two unicorns that add up to 7, or skip"
+      : "The opponent is transforming\u2026";
+  if (s.phase === "discard")
+    return mine
+      ? "Too many unicorns \u2014 discard down to " + MAX_UNICORNS
+      : "The opponent is discarding\u2026";
+  return "";
+}
+
 function statusHtml(s) {
-  return `<div>${s.status}</div>`;
+  return `<div>${statusFor(s)}</div>`;
 }
 
 function actionsHtml(s) {
   if (s.winner) return "";
-  if (activeSide(s) === "ai")
+  if (activeSide(s) !== mySide)
     return '<span class="hint">The opponent is playing\u2026</span>';
 
   if (s.phase === "split") {
@@ -217,9 +260,9 @@ function actionsHtml(s) {
         return `<span class="hint">You will receive ${art} ${name} fragment.</span><button data-keep="${a}" data-disc="${b}">OK</button><button data-action="tcancel">Cancel</button>`;
       }
       let btns = "";
-      if (s.human.fragments[colorOf(a)] == null)
+      if (s[mySide].fragments[colorOf(a)] == null)
         btns += `<button data-keep="${a}" data-disc="${b}">${CNAMES[colorOf(a)]}</button>`;
-      if (s.human.fragments[colorOf(b)] == null)
+      if (s[mySide].fragments[colorOf(b)] == null)
         btns += `<button data-keep="${b}" data-disc="${a}">${CNAMES[colorOf(b)]}</button>`;
       return `<span class="hint">Which unicorn becomes a fragment?</span>${btns}<button data-action="tcancel">Cancel</button>`;
     }
@@ -230,7 +273,7 @@ function actionsHtml(s) {
     return `<span class="hint">${hint}</span><button data-action="tskip">Skip</button>`;
   }
   if (s.phase === "discard") {
-    const over = s.human.unicorns.length - MAX_UNICORNS;
+    const over = s[mySide].unicorns.length - MAX_UNICORNS;
     return `<span class="hint">Click ${over} unicorn${over > 1 ? "s" : ""} to discard.</span>`;
   }
   return "";
@@ -238,12 +281,22 @@ function actionsHtml(s) {
 
 function overlayHtml(s) {
   const t =
-    s.winner === "human"
-      ? "You win!"
-      : s.winner === "ai"
-        ? "The opponent wins!"
-        : "It's a draw!";
-  return `<div class="overlay"><div class="ovbox"><h2>${t}</h2><button data-action="again">Play again</button><button data-action="title">Back to title</button></div></div>`;
+    s.winner === "draw"
+      ? "It's a draw!"
+      : s.winner === mySide
+        ? "You win!"
+        : "The opponent wins!";
+  // Online, only the host may start a rematch; the guest waits for the new deck.
+  const again =
+    !isOnline || isHost
+      ? '<button data-action="again">Play again</button>'
+      : '<span class="hint">Waiting for the host\u2026</span>';
+  return `<div class="overlay"><div class="ovbox"><h2>${t}</h2>${again}<button data-action="title">Back to title</button></div></div>`;
+}
+
+// Shown when the online opponent disconnects mid-match.
+function leftOverlay() {
+  return `<div class="overlay"><div class="ovbox"><h2>Opponent left</h2><button data-action="title">Back to title</button></div></div>`;
 }
 
 export function render() {
@@ -278,15 +331,15 @@ function paint() {
     <h2 class="logo gameLogo">7 Huenicorns</h2>
     <button class="discFab" data-action="discView" title="View the discard pile">Discard: ${s.discard.length}</button>
     <div class="mainCol">
-      ${areaHtml(s, s.ai, "Opponent", "ai", handCards(s, "ai"))}
+      ${areaHtml(s, s[opp(mySide)], "Opponent", "ai", handCards(s, opp(mySide)))}
       <div class="offer">
         ${offerHtml(s)}
         <div class="status">${statusHtml(s)}</div>
         <div class="actions">${actionsHtml(s)}</div>
       </div>
-      ${areaHtml(s, s.human, "You", "you", handCards(s, "human"))}
+      ${areaHtml(s, s[mySide], "You", "you", handCards(s, mySide))}
     </div>
-    ${s.winner ? overlayHtml(s) : ""}
+    ${oppLeft ? leftOverlay() : s.winner ? overlayHtml(s) : ""}
     ${showDiscard ? discardHtml(s) : ""}
   `;
 }
@@ -415,7 +468,7 @@ function onClick(e) {
   }
 
   const pick = e.target.closest("[data-pick]");
-  if (pick && s.phase === "choose" && activeSide(s) === "human") {
+  if (pick && s.phase === "choose" && activeSide(s) === mySide) {
     choicePair = +pick.dataset.pick;
     paint();
     return;
@@ -427,7 +480,7 @@ function onClick(e) {
 }
 
 function handleCard(s, id, zone) {
-  if (s.winner || activeSide(s) !== "human") return;
+  if (s.winner || activeSide(s) !== mySide) return;
 
   if (s.phase === "split") {
     if (zone === "pool") assignSplit(id, splitA.length < 2 ? "pairA" : "pairB");
@@ -446,7 +499,7 @@ function handleCard(s, id, zone) {
   if (s.phase === "transform") {
     if (zone !== "you" || tPair) return;
     if (tPick == null) {
-      const opts = transformOptions(s.human);
+      const opts = transformOptions(s[mySide]);
       if (!opts.some((o) => o.keep === id || o.discard === id)) return;
       tPick = id;
       paint();
@@ -459,8 +512,8 @@ function handleCard(s, id, zone) {
     }
     if (!makes7(tPick, id)) return;
     const a = tPick;
-    const kA = s.human.fragments[colorOf(a)] == null;
-    const kB = s.human.fragments[colorOf(id)] == null;
+    const kA = s[mySide].fragments[colorOf(a)] == null;
+    const kB = s[mySide].fragments[colorOf(id)] == null;
     if (kA && kB) {
       tPair = [a, id];
       paint();
@@ -475,6 +528,7 @@ function handleCard(s, id, zone) {
     sfx(itemThrow);
     setGame(doDiscard(s, id));
     render();
+    bcast();
     progress();
   }
 }
@@ -491,6 +545,7 @@ function doTransformHuman(s, keep, disc) {
   transformAnimated(s, keep, disc, () => {
     resetRound();
     render();
+    bcast();
     progress();
   });
 }
@@ -507,11 +562,13 @@ function handleButton(s, d) {
     return;
   }
   if (d.action === "again") {
+    if (isOnline && !isHost) return; // only the host restarts an online match
     endShown = false;
     showDiscard = false;
     startGame();
     resetRound();
     render();
+    bcast();
     progress();
     return;
   }
@@ -524,6 +581,7 @@ function handleButton(s, d) {
     setGame(applySplit(s, [splitA.slice(), splitB.slice()]));
     resetRound();
     render();
+    bcast();
     progress();
     return;
   }
@@ -532,6 +590,7 @@ function handleButton(s, d) {
     setGame(applyChoose(s, choicePair));
     resetRound();
     render();
+    bcast();
     progress();
     return;
   }
@@ -539,6 +598,7 @@ function handleButton(s, d) {
     setGame(skipTransform(s));
     resetRound();
     render();
+    bcast();
     progress();
     return;
   }
@@ -560,7 +620,7 @@ function handleButton(s, d) {
 function onDragStart(e) {
   const c = e.target.closest(".card[data-id]");
   const s = getGame();
-  if (!c || !s || s.phase !== "split" || s.splitter !== "human") return;
+  if (!c || !s || s.phase !== "split" || s.splitter !== mySide) return;
   dragId = +c.dataset.id;
   e.dataTransfer.effectAllowed = "move";
   try {
@@ -580,23 +640,30 @@ function onDrop(e) {
   dragId = null;
 }
 
-// ---- AI turn loop ----
+// ---- Turn loop (AI in single-player, relay peer online) ----
+
+// Broadcast the current state to the peer after a local move (online only).
+function bcast() {
+  if (isOnline) netSend(getGame());
+}
 
 function progress() {
   const s = getGame();
   if (!s || s.winner) return;
-  if (activeSide(s) === "ai") {
-    setTimeout(aiAct, 650);
+  if (activeSide(s) !== mySide) {
+    // The opponent acts: the AI drives it offline; online we await the relay.
+    if (!isOnline) setTimeout(aiAct, 650);
     return;
   }
-  // Human's turn but no Make 7 possible: skip automatically after a beat.
-  if (s.phase === "transform" && transformOptions(s.human).length === 0) {
+  // My turn but no Make 7 possible: skip automatically after a beat.
+  if (s.phase === "transform" && transformOptions(s[mySide]).length === 0) {
     setTimeout(() => {
       const g = getGame();
-      if (!g || g.phase !== "transform" || g.turn !== "human") return;
+      if (!g || g.phase !== "transform" || activeSide(g) !== mySide) return;
       setGame(skipTransform(g));
       resetRound();
       render();
+      bcast();
       progress();
     }, 450);
   }
@@ -654,10 +721,77 @@ export function initBoard() {
 }
 
 export function enterGame() {
-  const g = getGame();
-  if (!g || g.winner) startGame();
+  // Online, the deck is created by the host and synced; never start a new one
+  // locally or we would clobber the shared state.
+  if (!isOnline) {
+    const g = getGame();
+    if (!g || g.winner) startGame();
+  }
   endShown = false;
   resetRound();
   render();
   progress();
+}
+
+// ---- Online lobby entry points ----
+
+// Relay callbacks shared by host and guest.
+const handlers = {
+  // The peer announced itself. The host owns the deck, so it deals now and
+  // pushes the opening state; both then navigate into the game.
+  onPeer() {
+    if (isHost && !started) {
+      started = true;
+      startGame();
+      netSend(getGame());
+      goToSection("game");
+    }
+  },
+  // A fresh state arrived from the peer.
+  onState(st) {
+    setGame(st);
+    if (!started) {
+      started = true;
+      goToSection("game"); // guest enters on the first snapshot
+    } else {
+      resetRound();
+      render();
+      progress();
+    }
+  },
+  onLeft() {
+    if (started && !getGame()?.winner) {
+      oppLeft = true;
+      render();
+    }
+  },
+};
+
+export function hostGame(code) {
+  isOnline = true;
+  isHost = true;
+  mySide = "human";
+  started = false;
+  oppLeft = false;
+  netConnect(code, handlers);
+}
+
+export function joinGame(code) {
+  isOnline = true;
+  isHost = false;
+  mySide = "ai";
+  started = false;
+  oppLeft = false;
+  netConnect(code, handlers);
+}
+
+export function leaveOnline() {
+  if (!isOnline) return;
+  netClose();
+  isOnline = false;
+  isHost = false;
+  mySide = "human";
+  started = false;
+  oppLeft = false;
+  setGame(null);
 }
