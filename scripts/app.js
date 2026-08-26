@@ -7,7 +7,6 @@ import {
   initBoard,
   enterGame,
   setTransport,
-  onlineNeedsCode,
   hostGame,
   joinGame,
   leaveOnline,
@@ -16,10 +15,6 @@ import {
 function initOnlineLobby() {
   const info = document.getElementById("olInfo");
   const setInfo = (t) => (info.textContent = t);
-
-  // Some transports (Wavedash) match players automatically and have no code.
-  if (!onlineNeedsCode())
-    document.getElementById("olCode").style.display = "none";
 
   document.getElementById("olsec").addEventListener("click", (e) => {
     const go = e.target.closest("[data-go]");

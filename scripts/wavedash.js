@@ -1,7 +1,7 @@
 // Wavedash transport — used only in the Wavedash build (scripts/index-wd.js).
 //
 // It maps the same transport interface board.js expects
-//   host(h) / join(code, h) / send(state) / close() / needsCode
+//   host(h) / join(code, h) / send(state) / close()
 // onto Wavedash lobbies + P2P WebRTC. The `Wavedash` global is injected by the
 // platform (and by `wavedash dev`) before our code runs.
 //
@@ -78,7 +78,6 @@ export function makeWavedash() {
   });
 
   return {
-    needsCode: false,
     host(handlers) {
       h = handlers;
       hosting = true;

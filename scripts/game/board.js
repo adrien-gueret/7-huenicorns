@@ -17,13 +17,10 @@ import { bonusTaken, battleWin, battleLost, itemThrow } from "../sounds.js";
 
 // The networking transport is injected at startup (relay by default, Wavedash
 // on that platform) so this module stays transport-agnostic. It implements
-// host(h) / join(code, h) / send(state) / close() / needsCode.
+// host(h) / join(code, h) / send(state) / close().
 let transport = null;
 export function setTransport(t) {
   transport = t;
-}
-export function onlineNeedsCode() {
-  return !transport || transport.needsCode !== false;
 }
 
 // Play a sound effect, ignoring errors if audio is not initialised yet.

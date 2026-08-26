@@ -9,7 +9,7 @@
 //   S<json>        a full game-state snapshot
 //
 // It implements the shared transport interface consumed by board.js:
-//   host(h) / join(code, h) / send(state) / close() / needsCode
+//   host(h) / join(code, h) / send(state) / close()
 // where `h` is { onInfo, onPeer, onState, onLeft }.
 const BASE = "wss://relay.js13kgames.com/7-huenicorns";
 
@@ -61,7 +61,6 @@ function open(code, handlers) {
 }
 
 export const relay = {
-  needsCode: true,
   host(h) {
     const code = randCode();
     h.onInfo(`Share this code: ${code} — waiting for an opponent…`);
