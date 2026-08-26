@@ -1,3 +1,27 @@
-# Game title here
+# 7 Huenicorns
 
-Fill this README with info about your game.
+<img src="./images/cover.png" alt="Prism Paddock" width="320" />
+
+**A tiny card duel about unicorns and rainbows.**
+
+Your goal: **complete your rainbow before your opponent does.**
+
+In **7 Huenicorns**, every card is a colorful unicorn waiting to become part of your rainbow. Build the right combinations, turn your unicorns into rainbow fragments, and race to collect all seven colors.
+
+But getting the cards you need isn't always that simple. You'll have to make choices, read your opponent, and sometimes decide what you're willing to leave behind for them.
+
+## How to Play
+
+Build the rainbow before your opponent!
+
+1. **Split**  
+   The _Dealer_ splits 4 unicorns into 2 pairs.
+2. **Pick**  
+   The _Receiver_ picks a pair; the Dealer keeps the other.  
+    _(your stable only fits **5 unicorns**, so choose carefully what you keep!)_
+3. **Make 7**  
+   Match two unicorns whose values add up to 7 (1+6, 2+5, 3+4).
+4. **Make a Fragment**  
+   From your matched pair, keep one unicorn as a Rainbow Fragment of its color; the other unicorn is discarded. If you already own a Fragment of that color, you draw a new unicorn instead of a duplicate.
+5. **Complete the Rainbow**  
+   Collect a Fragment of each of the 7 colors to win!

@@ -17,7 +17,12 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
 
   console.log("Get project files content...");
 
-  let indexHTML = fs.readFileSync("./index.html", "utf8");
+  // The Wavedash variant uses its own HTML shell when present.
+  const htmlFile =
+    outName === "entry-wavedash" && fs.existsSync("./index-wd.html")
+      ? "./index-wd.html"
+      : "./index.html";
+  let indexHTML = fs.readFileSync(htmlFile, "utf8");
 
   let styleCSS = fs.readFileSync("./style.css", "utf8");
 
