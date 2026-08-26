@@ -331,13 +331,10 @@ export function render() {
   // transition in that case to avoid stacking two effects.
   const freshDeal =
     s && s.phase === "split" && s.revealed && s.revealed.join() !== dealtKey;
-  const prev = cardPositions();
   if (boardEl && document.startViewTransition && !freshDeal) {
-    const vt = document.startViewTransition(() => paint());
-    vt.finished.then(() => popMoved(prev)).catch(() => {});
+    document.startViewTransition(() => paint());
   } else {
     paint();
-    popMoved(prev);
   }
 }
 
@@ -433,7 +430,7 @@ function flyCard(card, fromEl, toEl, grow, done) {
   const b = (grow ? fromEl : toEl).getBoundingClientRect();
 
   const clone = card.cloneNode(true);
-  clone.classList.remove("pop", "pick", "objective", "hintable");
+  clone.classList.remove("pick", "objective", "hintable");
   clone.style.cssText =
     `position:fixed;margin:0;left:${a.left}px;top:${a.top}px;` +
     `width:${a.width}px;height:${a.height}px;z-index:60;` +
@@ -468,35 +465,6 @@ function flyCard(card, fromEl, toEl, grow, done) {
   };
   anim.onfinish = end;
   anim.oncancel = end;
-}
-
-function cardPositions() {
-  const m = new Map();
-  if (boardEl) {
-    boardEl.querySelectorAll(".card[data-id]").forEach((el) => {
-      el.classList.remove("pop");
-      const r = el.getBoundingClientRect();
-      m.set(el.dataset.id, Math.round(r.left) + "," + Math.round(r.top));
-    });
-  }
-  return m;
-}
-
-function popMoved(prev) {
-  if (!boardEl) return;
-  boardEl.querySelectorAll(".card[data-id]").forEach((el) => {
-    const before = prev.get(el.dataset.id);
-    if (before === undefined) return;
-    const r = el.getBoundingClientRect();
-    const now = Math.round(r.left) + "," + Math.round(r.top);
-    if (before === now) return;
-    el.classList.remove("pop");
-    void el.offsetWidth;
-    el.classList.add("pop");
-    el.addEventListener("animationend", () => el.classList.remove("pop"), {
-      once: true,
-    });
-  });
 }
 
 // ---- Interaction ----

@@ -108,11 +108,8 @@ export default function init() {
   playMainMusic();
 
   document.body.addEventListener("click", (e) => {
-    if (
-      e.target.tagName === "A" ||
-      e.target.tagName === "INPUT" ||
-      e.target.tagName === "BUTTON"
-    ) {
+    const { tagName: t } = e.target;
+    if (t === "A" || t === "INPUT" || t === "BUTTON") {
       click();
     }
   });

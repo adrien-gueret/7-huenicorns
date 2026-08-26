@@ -15,6 +15,7 @@
 //   recv  -> poll channel 0 each frame and hand snapshots to onState.
 export function makeWavedash() {
   const WD = Wavedash;
+  const E = WD.Events;
   const enc = new TextEncoder();
   const dec = new TextDecoder();
 
@@ -46,7 +47,7 @@ export function makeWavedash() {
 
   // Wire lobby/P2P lifecycle once. The peer's data channel opening is our
   // "opponent is here" signal (equivalent to the relay's presence handshake).
-  WD.on(WD.Events.LOBBY_JOINED, (p) => {
+  WD.on(E.LOBBY_JOINED, (p) => {
     lobbyId = p.lobbyId;
     // Remember the other player so we can show their name/avatar.
     const me = WD.getUserId();
@@ -60,18 +61,18 @@ export function makeWavedash() {
       WD.getLobbyInviteLink(true).then((r) => {
         h.onInfo(
           r && r.success
-            ? `Share this invite link (copied): ${r.data}`
-            : "Waiting for an opponent…",
+            ? `Invite link copied: ${r.data}`
+            : "Waiting for a player…",
         );
       });
   });
-  WD.on(WD.Events.P2P_CONNECTION_ESTABLISHED, () => {
+  WD.on(E.P2P_CONNECTION_ESTABLISHED, () => {
     h.onPeer && h.onPeer();
   });
-  WD.on(WD.Events.P2P_PEER_DISCONNECTED, () => {
+  WD.on(E.P2P_PEER_DISCONNECTED, () => {
     h.onLeft && h.onLeft();
   });
-  WD.on(WD.Events.LOBBY_USERS_UPDATED, (p) => {
+  WD.on(E.LOBBY_USERS_UPDATED, (p) => {
     if (p.changeType === "LEFT") h.onLeft && h.onLeft();
     else if (p.changeType === "JOINED") oppId = p.userId;
   });
@@ -81,13 +82,13 @@ export function makeWavedash() {
     host(handlers) {
       h = handlers;
       hosting = true;
-      h.onInfo("Creating a game…");
+      h.onInfo("Creating game…");
       WD.createLobby(WD.LobbyVisibility.PUBLIC, 2);
     },
     join(code, handlers) {
       h = handlers;
       hosting = false;
-      h.onInfo("Looking for a game…");
+      h.onInfo("Finding game…");
       // An invite link passes a specific lobby id; otherwise quick-join any.
       if (code) {
         WD.joinLobby(code);
@@ -95,7 +96,7 @@ export function makeWavedash() {
       }
       WD.listAvailableLobbies().then((r) => {
         if (r && r.success && r.data.length) WD.joinLobby(r.data[0].lobbyId);
-        else h.onInfo("No games available — create one instead.");
+        else h.onInfo("No games — create one.");
       });
     },
     send(s) {

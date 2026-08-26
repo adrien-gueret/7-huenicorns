@@ -10,22 +10,25 @@ body {
   --blue: #3f74d1;
   --indigo: #5b46c7;
   --violet: #9b46c7;
+  --g: #46a94f;
+  --g2: #2f8b53;
 
-  --ink: #4a3550;
-  --muted: #9a8aa0;
-  --panel: #ffffff;
-  --line: #ece6f2;
-  --radius: 14px;
-  --shadow: 0 6px 18px rgba(120, 90, 150, 0.12);
+  --ink: #3f4a44;
+  --muted: #86a089;
+  --panel: #fffdf5;
+  --line: #e2ead6;
+  --radius: 16px;
+  --shadow: 0 6px 16px rgba(40, 90, 60, 0.18);
+  --paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.45' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23p)' opacity='.55'/%3E%3C/svg%3E");
 
   font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
   color: var(--ink);
-  background: radial-gradient(
-    120% 120% at 50% 0%,
-    #fdf7ff 0%,
-    #f6eefc 55%,
-    #efe6f8 100%
-  );
+  background:
+    var(--paper),
+    radial-gradient(92% 190px at 26% 100%, #4aa63f 0 60%, transparent 62%),
+    radial-gradient(92% 190px at 84% 100%, #63c14a 0 60%, transparent 62%),
+    linear-gradient(180deg, #37bdee 0 46%, #8ad9f2);
+  background-blend-mode: overlay, normal, normal, normal;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,10 +44,13 @@ main {
   width: min(1240px, 98vw);
   height: min(770px, 96vh);
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.55);
-  border: 3px solid #fff;
-  border-radius: 22px;
-  box-shadow: var(--shadow);
+  background: var(--paper), rgba(255, 253, 246, 0.82);
+  background-blend-mode: hard-light, normal;
+  border: 4px solid #fff;
+  border-radius: 26px;
+  box-shadow:
+    0 12px 0 -4px rgba(47, 120, 60, 0.22),
+    var(--shadow);
   display: flex;
   overflow: hidden;
   position: relative;
@@ -114,7 +120,7 @@ main > section {
   font-weight: 800;
   margin: 12px;
   text-align: center;
-  color: var(--indigo);
+  color: var(--g2);
 }
 
 .p {
@@ -132,7 +138,7 @@ main > section {
   text-decoration: none;
   padding: 12px 20px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  background: linear-gradient(180deg, var(--g), var(--g2));
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: transform 0.08s ease;
@@ -182,7 +188,7 @@ main > section {
 #gameOptions {
   margin: 10px 0 0;
   font-weight: 700;
-  color: var(--indigo);
+  color: var(--ink);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -458,27 +464,6 @@ main > section {
   }
 }
 
-/* Emphasis played when a unicorn has just been stolen (after its glide). */
-.card.pop {
-  animation: pop 0.55s ease;
-  z-index: 4;
-}
-
-@keyframes pop {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent);
-  }
-  35% {
-    transform: scale(1.18) rotate(-3deg);
-    box-shadow: 0 0 0 7px color-mix(in srgb, var(--c) 45%, transparent);
-  }
-  100% {
-    transform: scale(1) rotate(0);
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-
 [data-color="0"] {
   --c: var(--red);
 }
@@ -521,7 +506,7 @@ main > section {
 .status {
   text-align: center;
   font-weight: 800;
-  color: var(--indigo);
+  color: var(--g2);
   min-height: 1.2em;
 }
 
@@ -549,7 +534,7 @@ main > section {
   padding: 10px 18px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  background: linear-gradient(180deg, var(--g), var(--g2));
   box-shadow: var(--shadow);
   transition: transform 0.08s ease;
 }
@@ -609,7 +594,7 @@ main > section {
 }
 
 .dz {
-  border: 2px dashed #d8b9ec;
+  border: 2px dashed #bcd9a8;
   border-radius: var(--radius);
   padding: 6px 10px 8px;
   background: rgba(255, 255, 255, 0.45);
@@ -624,7 +609,7 @@ main > section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(240, 232, 250, 0.55);
+  background: rgba(234, 246, 224, 0.6);
   transition:
     border-color 0.15s ease,
     background 0.15s ease;
@@ -636,16 +621,16 @@ main > section {
 
 .pairDrop.full {
   border-style: solid;
-  border-color: #b98fe0;
-  background: rgba(215, 195, 240, 0.55);
+  border-color: #8fca7a;
+  background: rgba(205, 235, 190, 0.55);
 }
 
 .dzCount {
   margin-top: 6px;
   font-size: 0.82rem;
   font-weight: 800;
-  color: var(--indigo);
-  background: rgba(155, 130, 200, 0.18);
+  color: var(--g2);
+  background: rgba(70, 150, 90, 0.16);
   padding: 2px 12px;
   border-radius: 999px;
 }
@@ -682,7 +667,7 @@ main > section {
   font-weight: 800;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--indigo);
+  color: var(--g2);
   text-align: center;
   margin-bottom: 4px;
 }
@@ -717,10 +702,10 @@ main > section {
   justify-content: center;
   color: #fff;
   font-weight: 800;
-  background: repeating-linear-gradient(45deg, #7a5bd8 0 9px, #6a4bc8 9px 18px);
+  background: repeating-linear-gradient(45deg, #48a94e 0 9px, #3c9142 9px 18px);
   box-shadow:
-    -4px 5px 0 -1px #c3b0ee,
-    -8px 10px 0 -2px #d6c8f3,
+    -4px 5px 0 -1px #a7d69a,
+    -8px 10px 0 -2px #c6e6ba,
     var(--shadow);
 }
 
@@ -776,7 +761,7 @@ main > section {
 }
 
 .rules b {
-  color: var(--indigo);
+  color: var(--g2);
 }
 
 /* ---- How to play: reuses .card, .gem and [data-color] ---- */
@@ -799,7 +784,7 @@ main > section {
   text-align: center;
   font-weight: 800;
   font-size: 1.25rem;
-  color: var(--indigo);
+  color: var(--g2);
   margin: 0;
 }
 
@@ -823,7 +808,7 @@ main > section {
   font-size: 1rem;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--violet);
+  color: var(--g2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -838,7 +823,7 @@ main > section {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  background: linear-gradient(180deg, var(--g), var(--g2));
   color: #fff;
   font-size: 0.85em;
 }
@@ -895,7 +880,7 @@ main > section {
 .htMath span {
   font-weight: 800;
   font-size: 1.05rem;
-  color: var(--indigo);
+  color: var(--g2);
   background: #fff;
   border: 2px solid var(--line);
   border-radius: 999px;
@@ -920,7 +905,7 @@ main > section {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(60, 40, 80, 0.55);
+  background: rgba(30, 62, 46, 0.5);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
@@ -942,7 +927,7 @@ main > section {
 .ovbox h2 {
   margin: 0 0 6px;
   font-size: 2rem;
-  color: var(--violet);
+  color: var(--g2);
 }
 
 /* ---- discard-pile viewer ---- */
@@ -951,9 +936,9 @@ main > section {
   top: 12px;
   right: 14px;
   z-index: 4;
-  border: 2px solid var(--indigo);
+  border: 2px solid var(--g2);
   background: #fff;
-  color: var(--indigo);
+  color: var(--g2);
   font-weight: 800;
   font-size: 0.8rem;
   padding: 5px 10px;
@@ -963,7 +948,7 @@ main > section {
 }
 
 .discFab:hover {
-  background: var(--indigo);
+  background: var(--g2);
   color: #fff;
 }
 
