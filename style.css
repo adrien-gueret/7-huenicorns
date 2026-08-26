@@ -918,7 +918,7 @@ main > section {
 /* ============================================================= */
 
 .overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(60, 40, 80, 0.55);
   backdrop-filter: blur(2px);
