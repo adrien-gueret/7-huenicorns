@@ -376,18 +376,41 @@ const prefersReducedMotion = () =>
   typeof matchMedia === "function" &&
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// A transform: fly the kept unicorn into its fragment gem.
+// A transform: fly the kept unicorn into its fragment gem, or — when the color
+// is already owned — fly the freshly drawn unicorn out of the deck instead.
 function transformAnimated(s, keep, discard, after) {
   const who = s.turn;
   const color = colorOf(keep);
-  // A Make 7 on an already-owned color draws a unicorn instead of filling a
-  // gem, so skip the card-to-gem flight in that case.
+  const side = who === "human" ? "you" : "ai";
   const dup = s[who].fragments[color] != null;
+
+  if (dup) {
+    // Already own this color: both cards are discarded and a fresh unicorn is
+    // drawn from the deck. Animate that draw so the swap is easy to follow.
+    sfx(bonusTaken);
+    const had = s[who].unicorns.slice();
+    const ns = doTransform(s, keep, discard);
+    setGame(ns);
+    resetRound();
+    paint();
+    const drawn = ns[who].unicorns.find((id) => !had.includes(id));
+    const deckEl = boardEl && boardEl.querySelector(".deckPile");
+    const newEl =
+      drawn != null &&
+      boardEl &&
+      boardEl.querySelector(`.card[data-id="${drawn}"]`);
+    if (!deckEl || !newEl || prefersReducedMotion()) return after();
+    busy = true;
+    flyCard(newEl, deckEl, newEl, true, () => {
+      busy = false;
+      after();
+    });
+    return;
+  }
+
   const gemEl =
     boardEl &&
-    boardEl.querySelector(
-      `.area.${who === "human" ? "you" : "ai"} .gem[data-color="${color}"]`,
-    );
+    boardEl.querySelector(`.area.${side} .gem[data-color="${color}"]`);
   const cardEl = boardEl && boardEl.querySelector(`.card[data-id="${keep}"]`);
 
   const finish = () => {
@@ -397,45 +420,47 @@ function transformAnimated(s, keep, discard, after) {
     after();
   };
 
-  if (dup || !cardEl || !gemEl || prefersReducedMotion()) return finish();
+  if (!cardEl || !gemEl || prefersReducedMotion()) return finish();
   busy = true;
-  flyCardToGem(cardEl, gemEl, finish);
+  flyCard(cardEl, cardEl, gemEl, false, finish);
 }
 
-function flyCardToGem(cardEl, gemEl, done) {
-  const src = cardEl.getBoundingClientRect();
-  const dst = gemEl.getBoundingClientRect();
+// Fly a clone of `card` between two elements. When `grow` is false the clone
+// shrinks/fades from `fromEl` into `toEl` (card -> gem); when true it grows/
+// fades in from `fromEl` to `toEl` (deck -> hand).
+function flyCard(card, fromEl, toEl, grow, done) {
+  const a = (grow ? toEl : fromEl).getBoundingClientRect();
+  const b = (grow ? fromEl : toEl).getBoundingClientRect();
 
-  const clone = cardEl.cloneNode(true);
+  const clone = card.cloneNode(true);
   clone.classList.remove("pop", "pick", "objective", "hintable");
   clone.style.cssText =
-    `position:fixed;margin:0;left:${src.left}px;top:${src.top}px;` +
-    `width:${src.width}px;height:${src.height}px;z-index:60;` +
+    `position:fixed;margin:0;left:${a.left}px;top:${a.top}px;` +
+    `width:${a.width}px;height:${a.height}px;z-index:60;` +
     `pointer-events:none;view-transition-name:none;` +
-    `--i:${cardEl.style.getPropertyValue("--i")};` +
-    `--row:${cardEl.style.getPropertyValue("--row")};`;
+    `--i:${card.style.getPropertyValue("--i")};` +
+    `--row:${card.style.getPropertyValue("--row")};`;
   document.body.appendChild(clone);
-  cardEl.style.visibility = "hidden";
+  card.style.visibility = "hidden";
 
-  const dx = dst.left + dst.width / 2 - (src.left + src.width / 2);
-  const dy = dst.top + dst.height / 2 - (src.top + src.height / 2);
-  const endScale = Math.max(dst.width / src.width, 0.14);
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  const scale = Math.max(b.width / a.width, 0.14);
+  const near = { transform: "translate(0,0) scale(1)", opacity: 1 };
+  const mid = {
+    transform: `translate(${dx * 0.5}px,${dy * 0.5 - 26}px) scale(0.72) rotate(6deg)`,
+    opacity: 1,
+    offset: 0.55,
+  };
+  const far = {
+    transform: `translate(${dx}px,${dy}px) scale(${scale})`,
+    opacity: 0.25,
+  };
 
-  const anim = clone.animate(
-    [
-      { transform: "translate(0,0) scale(1)", opacity: 1 },
-      {
-        transform: `translate(${dx * 0.5}px,${dy * 0.5 - 26}px) scale(0.72) rotate(6deg)`,
-        opacity: 1,
-        offset: 0.55,
-      },
-      {
-        transform: `translate(${dx}px,${dy}px) scale(${endScale})`,
-        opacity: 0.25,
-      },
-    ],
-    { duration: 640, easing: "cubic-bezier(.5,0,.35,1)" },
-  );
+  const anim = clone.animate(grow ? [far, mid, near] : [near, mid, far], {
+    duration: 640,
+    easing: "cubic-bezier(.5,0,.35,1)",
+  });
 
   const end = () => {
     clone.remove();
