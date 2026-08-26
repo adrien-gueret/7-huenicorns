@@ -5,9 +5,15 @@ import { Packer } from "roadroller";
 import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
 
 (async () => {
+  // The output folder/zip name defaults to "entry"; pass another name as the
+  // first CLI arg (e.g. `node build.mjs entry-wavedash`) to build a variant.
+  const outName = process.argv[2] || "entry";
+  const outDir = `./${outName}`;
+  const outZip = `./${outName}.zip`;
+
   console.log("Remove previous entry files...");
-  fs.rmSync("./entry", { recursive: true, force: true });
-  fs.rmSync("./entry.zip", { force: true });
+  fs.rmSync(outDir, { recursive: true, force: true });
+  fs.rmSync(outZip, { force: true });
 
   console.log("Get project files content...");
 
@@ -80,20 +86,20 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
 
   console.log("Write entry files...");
 
-  fs.mkdirSync("./entry");
+  fs.mkdirSync(outDir);
 
   fs.writeFileSync(
-    "./entry/index.html",
+    `${outDir}/index.html`,
     `<script>${packedCode.firstLine + packedCode.secondLine}</script>`,
     { encoding: "utf8" },
   );
 
   console.log("Zip entry folder...");
-  await zip("./entry", "./entry.zip", { compression: COMPRESSION_LEVEL.high });
+  await zip(outDir, outZip, { compression: COMPRESSION_LEVEL.high });
 
   console.log("Compress zip...");
   try {
-    await execSync("ect.exe -9 -zip ./entry.zip", { env: process.env });
+    await execSync(`ect.exe -9 -zip ${outZip}`, { env: process.env });
   } catch (e) {
     console.warn(
       "⚠ Cannot compress zip, please be sure ect.exe is installed and available from global scope",
@@ -101,7 +107,7 @@ import { zip, COMPRESSION_LEVEL } from "zip-a-folder";
   }
 
   console.log("Get entry size...");
-  const { size } = fs.statSync("./entry.zip");
+  const { size } = fs.statSync(outZip);
 
   console.log("Entry size: " + size + " bytes");
 

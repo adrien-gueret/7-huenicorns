@@ -2,8 +2,7 @@
 // the Wavedash build) call boot() with the transport they want board.js to use.
 import initSections from "./sections.js";
 
-import initState, { areSoundMuted } from "./state.js";
-import initSounds from "./sounds.js";
+import initSounds, { toggleSounds } from "./sounds.js";
 import {
   initBoard,
   enterGame,
@@ -22,7 +21,7 @@ function initOnlineLobby() {
   if (!onlineNeedsCode())
     document.getElementById("olCode").style.display = "none";
 
-  document.getElementById("online").addEventListener("click", (e) => {
+  document.getElementById("olsec").addEventListener("click", (e) => {
     const go = e.target.closest("[data-go]");
     if (!go) return;
     if (go.dataset.go === "host") {
@@ -34,14 +33,29 @@ function initOnlineLobby() {
   });
 }
 
+// Sound is off until the player ticks "Enable sounds". That tick is a user
+// gesture, which is what lets us start the audio context; the first one boots
+// the sound system, later ones just mute/unmute. It is never persisted.
+function initSoundToggle() {
+  const box = document.getElementById("soundsCheckbox");
+  box.checked = false;
+  let ready = false;
+  box.addEventListener("change", () => {
+    if (ready) toggleSounds(!box.checked);
+    else {
+      ready = true;
+      initSounds();
+    }
+  });
+}
+
 export function boot(transport) {
-  initState();
   setTransport(transport);
   initBoard();
   initOnlineLobby();
+  initSoundToggle();
 
-  let isSoundInit = false;
-  initSections(({ currentSection, nextSection }) => {
+  initSections(({ nextSection }) => {
     if (nextSection === "game") {
       enterGame();
     }
@@ -49,11 +63,6 @@ export function boot(transport) {
     // Leaving the lobby/board back toward the menu tears down any relay link.
     if (nextSection === "title" || nextSection === "play") {
       leaveOnline();
-    }
-
-    if (!isSoundInit && currentSection === "title" && nextSection !== "title") {
-      isSoundInit = true;
-      initSounds(areSoundMuted());
     }
   });
 }

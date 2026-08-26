@@ -89,12 +89,32 @@ function cardHtml(id, zone, cls, drag) {
   return `<div class="card ${cls || ""}" ${drag ? 'draggable="true"' : ""} data-color="${c}" data-id="${id}" data-zone="${zone}" title="${CNAMES[c]} ${v}" style="view-transition-name:v${id};--i:${v - 1};--row:${c}"><span class="v">${v}</span><span class="art"><span class="art-img"></span></span><span class="cn">${CNAMES[c]}</span></div>`;
 }
 
+// Neutralise HTML in externally-sourced text (a Wavedash username) so it can be
+// dropped into innerHTML safely.
+const esc = (t) =>
+  ("" + t).replace(/[&<>"]/g, (c) => "&#" + c.charCodeAt(0) + ";");
+
+// Resolve the label + avatar for one side. Online on a platform that exposes
+// player identities (Wavedash), show the real name/avatar; otherwise fall back
+// to the generic "You" / "Opponent".
+function ident(mine, fallback) {
+  let name = fallback;
+  let av = "";
+  const id =
+    isOnline && transport && transport.identity && transport.identity(mine);
+  if (id) {
+    if (id.name) name = id.name;
+    if (id.avatar) av = `<img class="av" src="${id.avatar}">`;
+  }
+  return { av, name: esc(name) };
+}
+
 function areaHtml(s, pl, who, theme, cards) {
   const n = fragCount(pl);
   return `<div class="area ${theme}">
       <div class="areaInfo">
         <div class="whoRow">
-          <span class="who"><b class="name">${who}</b><span class="fc">Fragments: <b>${n}</b>/7</span></span>
+          ${who.av}<span class="who"><b class="name">${who.name}</b><span class="fc">Fragments: <b>${n}</b>/7</span></span>
         </div>
         <div class="gems">${gemsHtml(pl)}</div>
       </div>
@@ -337,13 +357,13 @@ function paint() {
     <h2 class="logo gameLogo">7 Huenicorns</h2>
     <button class="discFab" data-action="discView" title="View the discard pile">Discard: ${s.discard.length}</button>
     <div class="mainCol">
-      ${areaHtml(s, s[opp(mySide)], "Opponent", "ai", handCards(s, opp(mySide)))}
+      ${areaHtml(s, s[opp(mySide)], ident(false, "Opponent"), "ai", handCards(s, opp(mySide)))}
       <div class="offer">
         ${offerHtml(s)}
         <div class="status">${statusHtml(s)}</div>
         <div class="actions">${actionsHtml(s)}</div>
       </div>
-      ${areaHtml(s, s[mySide], "You", "you", handCards(s, mySide))}
+      ${areaHtml(s, s[mySide], ident(true, "You"), "you", handCards(s, mySide))}
     </div>
     ${oppLeft ? leftOverlay() : s.winner ? overlayHtml(s) : ""}
     ${showDiscard ? discardHtml(s) : ""}

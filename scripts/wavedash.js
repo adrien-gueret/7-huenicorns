@@ -20,7 +20,12 @@ export function makeWavedash() {
 
   let h = {};
   let lobbyId = "";
+  let oppId = "";
+  let hosting = false;
   let polling = false;
+
+  // Lobby membership can hand us peers as bare ids or as objects.
+  const uid = (u) => u.userId || u.id || u;
 
   // Drain channel 0 every frame; each packet is a JSON game-state snapshot.
   function pump() {
@@ -43,7 +48,22 @@ export function makeWavedash() {
   // "opponent is here" signal (equivalent to the relay's presence handshake).
   WD.on(WD.Events.LOBBY_JOINED, (p) => {
     lobbyId = p.lobbyId;
+    // Remember the other player so we can show their name/avatar.
+    const me = WD.getUserId();
+    (p.users || []).forEach((u) => {
+      if (uid(u) !== me) oppId = uid(u);
+    });
     startPump();
+    // Now that we are truly in the lobby, grab a shareable invite link
+    // (copied to the clipboard) so the host can send it to a friend.
+    if (hosting)
+      WD.getLobbyInviteLink(true).then((r) => {
+        h.onInfo(
+          r && r.success
+            ? `Share this invite link (copied): ${r.data}`
+            : "Waiting for an opponent…",
+        );
+      });
   });
   WD.on(WD.Events.P2P_CONNECTION_ESTABLISHED, () => {
     h.onPeer && h.onPeer();
@@ -53,25 +73,20 @@ export function makeWavedash() {
   });
   WD.on(WD.Events.LOBBY_USERS_UPDATED, (p) => {
     if (p.changeType === "LEFT") h.onLeft && h.onLeft();
+    else if (p.changeType === "JOINED") oppId = p.userId;
   });
 
   return {
     needsCode: false,
     host(handlers) {
       h = handlers;
+      hosting = true;
       h.onInfo("Creating a game…");
       WD.createLobby(WD.LobbyVisibility.PUBLIC, 2);
-      // Offer a shareable invite link once we are in the lobby.
-      WD.getLobbyInviteLink(true).then((r) => {
-        h.onInfo(
-          r && r.success
-            ? `Waiting for an opponent… Invite link copied: ${r.data}`
-            : "Waiting for an opponent…",
-        );
-      });
     },
     join(code, handlers) {
       h = handlers;
+      hosting = false;
       h.onInfo("Looking for a game…");
       // An invite link passes a specific lobby id; otherwise quick-join any.
       if (code) {
@@ -86,10 +101,20 @@ export function makeWavedash() {
     send(s) {
       WD.broadcastP2PMessage(0, true, enc.encode(JSON.stringify(s)));
     },
+    // Board asks for the local ("mine") or opponent's display name + avatar.
+    identity(mine) {
+      const id = mine ? WD.getUserId() : oppId;
+      if (!id) return null;
+      return {
+        name: WD.getUsername(mine ? undefined : id) || "",
+        avatar: WD.getUserAvatarUrl(id, WD.AvatarSize.SMALL) || "",
+      };
+    },
     close() {
       polling = false;
       if (lobbyId) WD.leaveLobby(lobbyId);
       lobbyId = "";
+      oppId = "";
     },
   };
 }

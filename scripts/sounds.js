@@ -4,8 +4,6 @@ import initZZFX, {
   playSound,
   toggle,
 } from "./zzfx.js";
-import { toggleMuteSounds } from "./state.js";
-import { toggleSoundsCheckbox, onSoundsCheckboxChange } from "./ui.js";
 
 // A soft, magical "unicorn" instrument set used by the music tracks below.
 // ZzFX params: volume, randomness, frequency, attack, sustain, release, shape,
@@ -97,23 +95,17 @@ export const click = () =>
 
 export function toggleSounds(isMuted) {
   toggle(isMuted);
-  toggleSoundsCheckbox(!isMuted);
-
-  toggleMuteSounds(isMuted);
 }
 
 function playMainMusic() {
   playMusic(mainMusic, true);
 }
 
-export default function init(initialMuted = false) {
-  initZZFX({ defaultMuted: initialMuted });
-  toggleSoundsCheckbox(!initialMuted);
+// Called once, on the user gesture that enables sound (ticking the checkbox),
+// so the audio context is allowed to start. Sound is off by default.
+export default function init() {
+  initZZFX({ defaultMuted: false });
   playMainMusic();
-
-  onSoundsCheckboxChange((e) => {
-    toggleSounds(!e.currentTarget.checked);
-  });
 
   document.body.addEventListener("click", (e) => {
     if (

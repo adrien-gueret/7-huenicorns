@@ -5,7 +5,8 @@
     "zip-a-folder": "^3.1.9"
   },
   "scripts": {
-    "build:entry": "npx rollup ./scripts/index.js --file index.js --format iife && node build.mjs",
-    "build:wd": "npx rollup ./scripts/index-wd.js --file index.js --format iife && node build.mjs"
+    "build": "npm run build:js13k && npm run build:wd",
+    "build:js13k": "npx rollup ./scripts/index.js --file index.js --format iife && node build.mjs",
+    "build:wd": "npx rollup ./scripts/index-wd.js --file index.js --format iife && node build.mjs entry-wavedash"
   }
 }

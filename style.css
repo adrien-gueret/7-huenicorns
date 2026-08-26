@@ -179,11 +179,6 @@ main > section {
 /* Sound option                                                   */
 /* ============================================================= */
 
-body:not([data-current-section]) #gameOptions,
-[data-current-section="title"] #gameOptions {
-  display: none;
-}
-
 #gameOptions {
   margin: 10px 0 0;
   font-weight: 700;
@@ -268,6 +263,13 @@ body:not([data-current-section]) #gameOptions,
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+}
+
+.av {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 
 .name {
